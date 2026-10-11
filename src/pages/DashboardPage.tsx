@@ -28,7 +28,7 @@ const StatsPanel = lazy(() => import("@/components/dashboard/StatsPanel"));
 const DemandHeatmap = lazy(() => import("@/components/dashboard/DemandHeatmap"));
 const PriorityRankingsView = lazy(() => import("@/components/dashboard/PriorityRankingsView"));
 const BRICSComparison = lazy(() => import("@/components/dashboard/BRICSComparison"));
-const DepartmentView = lazy(() => import("@/components/dashboard/DepartmentView"));
+const NgoOnboardingView = lazy(() => import("@/components/dashboard/NgoOnboardingView"));
 
 function DashboardPanelFallback() {
   return (
@@ -36,7 +36,7 @@ function DashboardPanelFallback() {
   );
 }
 
-export type DashboardTab = "overview" | "heatmap" | "brics" | "reports" | "settings" | "priority" | "departments";
+export type DashboardTab = "overview" | "heatmap" | "brics" | "reports" | "settings" | "priority" | "ngo" | "departments";
 
 function formatRelativeTime(date: Date | string | any): string {
   if (!date) return "just now";
@@ -434,10 +434,10 @@ export default function DashboardPage({
     );
   }
 
-  if (activeTab === "departments") {
+  if (activeTab === "ngo" || activeTab === "departments") {
     return (
       <Suspense fallback={<DashboardPanelFallback />}>
-        <DepartmentView
+        <NgoOnboardingView
           submissions={filteredSubmissions}
           onNavigateToReports={(category, filterTerm) => {
             handleNavigateToReportsFiltered(filterTerm || "", category || "all");

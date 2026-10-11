@@ -82,3 +82,52 @@ export interface BRICSCountry {
   defaultCoords: { lat: number; lng: number };
   sampleDistricts: { state: string; districts: string[] }[];
 }
+
+export interface NgoPartner {
+  id: string;
+  name: string;
+  registrationNumber: string;
+  entityType: 'Trust' | 'Society' | 'Section 8 Company' | 'Non-Profit Organization' | 'Community Based Org';
+  foundedYear?: string | number;
+  contactPerson: string;
+  designation?: string;
+  phone: string;
+  email: string;
+  website?: string;
+  state: string;
+  districts: string[];
+  address?: string;
+  sectors: ComplaintCategory[];
+  volunteerCount?: number;
+  activeResponseUnits?: number;
+  verificationStatus: 'verified' | 'pending' | 'under_review';
+  verificationSource: 'darpan_ai_match' | 'document_ocr' | 'manual_review';
+  documentImageUrl?: string;
+  darpanConfidence?: number;
+  onboardedAt: string;
+  bio?: string;
+  assignedIssuesCount?: number;
+}
+
+export interface NgoExtractionResult {
+  name: string;
+  registrationNumber: string;
+  entityType: 'Trust' | 'Society' | 'Section 8 Company' | 'Non-Profit Organization' | 'Community Based Org';
+  foundedYear?: string;
+  contactPerson: string;
+  designation?: string;
+  phone: string;
+  email: string;
+  website?: string;
+  state: string;
+  districts: string[];
+  address: string;
+  sectors: ComplaintCategory[];
+  volunteerCount?: number;
+  activeResponseUnits?: number;
+  bio?: string;
+  darpanConfidence: number;
+  detectedCertificateType?: string;
+  rawExtractedText?: string;
+}
+

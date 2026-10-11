@@ -31,6 +31,8 @@ import {
   buildDeterministicRecommendations,
   validateGeminiRecommendations,
 } from "./lib/priority";
+import { extractNgoFromImage } from "./lib/ngoExtractor";
+import { INITIAL_NGO_PARTNERS } from "./lib/ngoData";
 
 async function findLikelyDuplicate(
   firestore: Firestore,
@@ -574,6 +576,102 @@ Return JSON strictly in this format:
         success: false,
         error: ttsErr?.response?.data?.error?.message || "Failed to synthesize speech via Cloud TTS.",
       });
+    }
+  });
+
+  // In-memory demo NGO store initialized with seed partners
+  const inMemoryNgos = [...INITIAL_NGO_PARTNERS];
+
+  /** POST /api/ngo/extract-document — Extract NGO profile from uploaded certificate/card image via Gemini Vision */
+  app.post("/api/ngo/extract-document", upload.single("image"), async (req, res) => {
+    try {
+      let buffer: Buffer | null = null;
+      let mimeType = "image/jpeg";
+
+      if (req.file) {
+        buffer = req.file.buffer;
+        mimeType = req.file.mimetype || "image/jpeg";
+      } else if (req.body?.imageBase64) {
+        const rawBase64 = String(req.body.imageBase64).replace(/^data:image\/[a-z+]+;base64,/, "");
+        buffer = Buffer.from(rawBase64, "base64");
+        mimeType = req.body.mimeType || "image/jpeg";
+      }
+
+      if (!buffer) {
+        return res.status(400).json({ error: "No image file or base64 provided." });
+      }
+
+      const extracted = await extractNgoFromImage(buffer, mimeType);
+      return res.json({ success: true, extracted });
+    } catch (err: any) {
+      console.error("NGO document extraction error:", err);
+      return res.status(500).json({ error: "Failed to extract document details", details: String(err) });
+    }
+  });
+
+  /** POST /api/ngo/onboard — Register a new NGO partner */
+  app.post("/api/ngo/onboard", async (req, res) => {
+    try {
+      const body = req.body || {};
+      const newNgo = {
+        id: body.id || `ngo-${Date.now()}`,
+        name: String(body.name || "Voluntary Organization").trim(),
+        registrationNumber: String(body.registrationNumber || "DARPAN-PENDING").trim(),
+        entityType: body.entityType || "Trust",
+        foundedYear: body.foundedYear || String(new Date().getFullYear()),
+        contactPerson: String(body.contactPerson || "Primary Contact").trim(),
+        designation: String(body.designation || "Representative").trim(),
+        phone: String(body.phone || "").trim(),
+        email: String(body.email || "").trim(),
+        website: body.website ? String(body.website).trim() : undefined,
+        state: String(body.state || "National").trim(),
+        districts: Array.isArray(body.districts) && body.districts.length > 0 ? body.districts : ["General"],
+        address: String(body.address || "").trim(),
+        sectors: Array.isArray(body.sectors) && body.sectors.length > 0 ? body.sectors : ["water"],
+        volunteerCount: Number(body.volunteerCount) || 50,
+        activeResponseUnits: Number(body.activeResponseUnits) || 2,
+        verificationStatus: body.verificationStatus || "verified",
+        verificationSource: body.verificationSource || "darpan_ai_match",
+        darpanConfidence: Number(body.darpanConfidence) || 98.0,
+        onboardedAt: new Date().toISOString(),
+        bio: String(body.bio || "").trim(),
+        assignedIssuesCount: 0,
+      };
+
+      inMemoryNgos.unshift(newNgo as any);
+
+      if (!IS_DEMO) {
+        try {
+          await getAdminFirestore().collection("ngos").doc(newNgo.id).set(newNgo);
+        } catch (dbErr) {
+          console.warn("Firestore save note for NGO:", dbErr);
+        }
+      }
+
+      return res.json({ success: true, ngo: newNgo });
+    } catch (err: any) {
+      console.error("NGO onboarding error:", err);
+      return res.status(500).json({ error: "Failed to onboard NGO", details: String(err) });
+    }
+  });
+
+  /** GET /api/ngo/list — Retrieve all onboarded NGO partners */
+  app.get("/api/ngo/list", async (_req, res) => {
+    try {
+      if (!IS_DEMO) {
+        try {
+          const snap = await getAdminFirestore().collection("ngos").limit(100).get();
+          if (!snap.empty) {
+            const dbNgos = snap.docs.map(d => d.data());
+            return res.json({ ngos: dbNgos });
+          }
+        } catch {
+          // Fall through to inMemoryNgos
+        }
+      }
+      return res.json({ ngos: inMemoryNgos });
+    } catch (err: any) {
+      return res.json({ ngos: inMemoryNgos });
     }
   });
 

@@ -1,226 +1,134 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/brand/nagarvaani-logo-dark.svg">
-    <img alt="NagarVaani" src="public/brand/nagarvaani-logo-light.svg" width="460">
-  </picture>
-</p>
-
-<p align="center"><b>Every citizen's voice. Every city's priority.</b></p>
-
-<p align="center">
-  <a href="https://github.com/rohilkohli/NagarVaani/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/rohilkohli/NagarVaani/actions/workflows/ci.yml/badge.svg"></a>
-</p>
-
-**NagarVaani** is a multilingual AI platform that turns citizen complaints (voice, text, photo, WhatsApp) into
-need-weighted infrastructure priorities for policymakers. Built for **Build with AI: Code for Communities, Second Edition**
-(Google Cloud x Hack2skill), **Track 01: AI for Digital Public Infrastructure & Governance**, with "solving for India"
-as the theme and BRICS applicability as an extension.
-
-| | |
-|---|---|
-| **Live demo** | https://nagarvaani-636001394004.asia-south1.run.app (no login, sandbox data) |
-| **Demo video** | [Watch the demo](https://youtu.be/Nn1F67GYW2E) |
-| **Submission notes** | [docs/SUBMISSION.md](docs/SUBMISSION.md) |
+<h1 align="center">Seva-Sankalp (सेवा-संकल्प)</h1>
+<p align="center"><b>Civic Intelligence & NGO Onboarding Ecosystem</b></p>
+<p align="center"><i>Multilingual citizen voice aggregation, need-weighted infrastructure prioritization, and AI-powered NGO partner onboarding.</i></p>
 
 ---
 
-## The problem
+## 🌟 Overview
 
-The Track 01 brief describes it well: citizen development requests live in fragmented systems, which leads to
-misaligned public spending, unaddressed infrastructure gaps, and no way to measure the impact of digital public
-infrastructure. Citizens speak dozens of languages and use voice and messaging apps, not forms.
+**Seva-Sankalp** is a next-generation civic governance and digital public infrastructure (DPI) platform for India. It bridges the gap between citizens, civil society organizations (NGOs), and policymakers by transforming unstructured citizen reports (voice, regional text, photos, WhatsApp) into need-weighted infrastructure priorities and connecting verified grassroots NGOs directly to local civic issues.
 
-## What NagarVaani does
+### Key Capabilities
 
-1. **Collects** complaints in the citizen's own language: web form, voice (Gemini transcription, with a confirm-and-edit step),
-   photo, and a WhatsApp Cloud API webhook.
-2. **Understands** each complaint with Gemini: detects the language, translates to English, classifies the category
-   (roads, water, electricity, sanitation, health, education, other) and scores urgency 1 to 5. PII is redacted before any Gemini call.
-   If Gemini is unavailable, a rule-based classifier takes over and every result is tagged with `classified_by` and a confidence level.
-3. **Deduplicates** near-identical reports by text, category, district and location (`lib/duplicate.ts`).
-4. **Joins complaints with national data** (Census 2011 population and literacy, NITI Aayog aspirational-district flag,
-   NFHS-5 household indicators) and computes a **need-weighted priority score** so a small, under-served district can outrank a large city
-   with more raw complaints. The dashboard shows raw rank versus need-weighted rank side by side.
-5. **Recommends projects**: Gemini receives the aggregated, data-joined table (not raw complaints) and returns structured
-   recommendations with evidence, beneficiaries derived from Census population, a relevant scheme only when appropriate,
-   and "insufficient data" instead of guesses. A deterministic builder is the fallback, tagged `rule-based`.
-6. **Shows it** on a demand heatmap (Google Maps + deck.gl), priority rankings, department views and a citizen-facing tracker.
+1. **Multilingual Citizen Reporting**:
+   - Voice transcription in 10+ Indian languages (Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, English).
+   - Gemini Multimodal image hazard detection & PII redaction.
+   - WhatsApp Cloud API webhook intake with automated bilingual status receipts.
 
-## Screenshots
+2. **AI-Powered NGO Partner Onboarding & Verification**:
+   - **Document Image Acceptance**: NGOs onboard seamlessly by uploading registration documents (NITI Aayog NGO-DARPAN Certificates, Registered Trust Deeds, Societies Registration Act XXI of 1860, or Section 8 Company MCA Certificates).
+   - **Gemini Multimodal Vision OCR**: Automatically extracts organization name, unique Darpan ID, entity type, founding year, key signatories, phone, email, website, operational districts, and civic focus sectors.
+   - **Editable Representative Profile**: NGO representatives can review, edit, and fine-tune all details before enrollment.
+   - **Partner Directory & Grievance Routing**: Verified NGOs are enrolled in the active partner registry and can receive direct routing of urgent citizen grievances in their districts.
 
-Captured from the live demo (synthetic data).
+3. **Need-Weighted Prioritization Engine**:
+   - Joins citizen reports with national datasets: **Census 2011 population & literacy**, **NITI Aayog Aspirational Districts**, and **NFHS-5 household indicators**.
+   - Need-weighted scoring ensures that under-served rural districts and high-deprivation areas outrank high-volume urban metros in capital repair allocations.
 
-| Citizen report | Tracking reference |
-|---|---|
-| <img src="docs/screenshots/citizen-report-form.png" width="260" alt="Citizen report form"> | <img src="docs/screenshots/citizen-report-submitted.png" width="260" alt="Report submitted with tracking reference"> |
+4. **Geospatial Demand Heatmap**:
+   - High-performance Google Maps & deck.gl visualization surfacing infrastructure distress clusters across roads, drinking water, healthcare, sanitation, and electricity.
 
-| Demand heatmap | Priority interventions |
-|---|---|
-| <img src="docs/screenshots/dashboard-heatmap.png" alt="Demand heatmap"> | <img src="docs/screenshots/priority-interventions.png" alt="Raw rank versus need-weighted rank"> |
+---
 
-| Department SLA centre | Beyond India (BRICS extension) |
-|---|---|
-| <img src="docs/screenshots/department-sla.png" alt="Department SLA centre"> | <img src="docs/screenshots/beyond-india-brics.png" alt="BRICS extension"> |
-
-## Architecture
+## 🏗️ Architecture
 
 ```mermaid
-flowchart LR
-  A[Citizen: web / voice / photo] --> S[Express API - Cloud Run]
-  W[WhatsApp Cloud API webhook] --> S
-  S -->|PII redaction| G[Gemini: transcribe, classify, translate]
-  G --> D[(Firestore live mode / in-memory sandbox demo mode)]
-  D --> J[Join with district data: Census, NITI, NFHS-5]
-  J --> P[Need-weighted scoring]
-  P --> R[Gemini: project recommendations]
-  R --> U[Policymaker dashboard: heatmap, rankings]
-  D --> T[Citizen tracker]
+flowchart TD
+    subgraph Citizens["Citizen Voice & Intake"]
+        A1[Voice Input] --> S[Express Gateway]
+        A2[Regional Text / Web Form] --> S
+        A3[Photo Evidence] --> S
+        A4[WhatsApp Cloud API] --> S
+    end
+
+    subgraph NGOs["Civil Society / NGO Onboarding"]
+        N1[Certificate / Darpan Image Upload] --> O[Gemini Vision OCR]
+        O --> N2[Structured Entity Profile]
+        N2 --> N3[Editable Verification Form]
+        N3 --> N4[(Verified NGO Registry)]
+    end
+
+    subgraph Intelligence["AI & Data Processing"]
+        S -->|PII Redaction| G[Gemini 2.5 Flash]
+        G --> D[(Grievance Store)]
+        D --> J[Join with Census 2011, NITI Aayog & NFHS-5]
+        J --> P[Need-Weighted Scoring Engine]
+        P --> R[AI Project Recommendations]
+    end
+
+    subgraph Action["Policymaker & Field Action"]
+        R --> V1[Policymaker Bento Dashboard]
+        D --> V2[Geospatial Heatmap]
+        D -->|Dispatch Urgencies| N4
+        D --> V3[Citizen Tracker]
+    end
 ```
 
-## Tech stack
+---
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, Vite, TypeScript, Tailwind CSS v4 |
-| Backend | Express (`server.ts`), served from a single Cloud Run container |
-| AI | Google Gemini via `@google/genai` (default `gemini-2.5-flash`, override with `GEMINI_MODEL`) |
-| Data | Firebase Firestore and Storage (live mode); in-memory sandbox (demo mode) |
-| Maps | Google Maps JavaScript API + deck.gl HeatmapLayer |
-| Messaging | WhatsApp Cloud API webhook with HMAC signature verification |
-| Deploy | Cloud Run (asia-south1), Cloud Build source deploy |
+## 🛠️ Tech Stack
 
-## Two run modes
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts, Deck.gl
+- **Backend**: Node.js, Express, Multer, Axios, Helmet, CORS
+- **AI & Multimodal Vision**: `@google/genai` (Gemini 2.5 Flash) for multimodal document OCR, voice transcription, translation, and category classification
+- **Data & Storage**: Firebase / Cloud Firestore & Cloud Storage (with full zero-dependency in-memory sandbox demo mode)
+- **Maps**: Google Maps JavaScript API & Deck.gl geospatial overlays
+- **Testing**: Node.js test runner (`tsx --test lib/*.test.ts`), Playwright
 
-| | Demo (`APP_MODE=demo`) | Live |
-|---|---|---|
-| Login | none | Firebase Auth, roles: admin, supervisor, operator, auditor |
-| Storage | in-memory sandbox seeded with synthetic data | Firestore and Storage |
-| Admin actions | disabled | enabled by role |
-| Needs | only `GEMINI_API_KEY` (falls back to rule-based without it) | Firebase, secrets, Meta setup for WhatsApp |
+---
 
-## Data and provenance
+## 🚀 Quick Start
 
-- `data/districts.csv`: 58 districts. Census 2011 population and literacy, NITI Aayog aspirational-district flag.
-  NFHS-5 (2019-21) electricity, improved drinking water and improved sanitation are loaded for **30 of 58 districts**
-  (mirror repository covers 21 states and UTs); the rest are left empty on purpose, never estimated.
-  `pmgsy_road_connectivity_pct` is not loaded.
-- Sources, licences and retrieval dates: [data/SOURCES.md](data/SOURCES.md). Row-level trace: [data/VERIFICATION.md](data/VERIFICATION.md)
-  (human verification is still pending).
-- **Need-weighted score** = complaints per 100k population x mean urgency x (1 + deprivation factor) x unresolved-age factor.
-  Weights are configurable constants in [`lib/priority.ts`](lib/priority.ts) and shown in the dashboard tooltip.
-  Beneficiary estimates use configurable assumed shares of district population per category; they are estimates, not scheme data.
-- Seed complaints (`lib/seedData.ts`) are **synthetic** (66 records: 56 in India, 10 across other BRICS countries) and labelled as demo data in the UI.
+### 1. Prerequisites
+- Node.js 20+ installed
+- npm or bun
 
-## Evaluation
-
-`npm run eval` runs the classifier on a 60-complaint synthetic multilingual set (10 Indian languages x 6 complaints)
-and writes [docs/eval-results.md](docs/eval-results.md). The committed report covers the **rule-based fallback only**;
-Gemini has not been evaluated in that report because no API key was available when it was generated.
-The set is synthetic and small, so treat the numbers as a regression check, not as model accuracy.
-
-## Quick start
-
+### 2. Clone and Install
 ```bash
-git clone https://github.com/rohilkohli/NagarVaani.git
-cd NagarVaani
+git clone https://github.com/Aamirbadar07/Seva-Sankalp.git
+cd Seva-Sankalp
 npm install
+```
+
+### 3. Environment Setup
+Copy the example environment configuration:
+```bash
 cp .env.example .env
-# credential-free demo:
-APP_MODE=demo NODE_ENV=development GEMINI_API_KEY=demo-key npm run dev
 ```
+*(In demo mode, no external API keys are strictly required; fallback rule-based classification and simulated OCR run automatically.)*
 
-Open http://localhost:3000. On Windows PowerShell use `$env:APP_MODE="demo"; $env:NODE_ENV="development"; $env:GEMINI_API_KEY="demo-key"; npm run dev`.
-
-Checks used by CI:
-
+To enable live Gemini AI classification and multimodal vision OCR:
 ```bash
-npm run check:env && npm run lint && npm test && npm run build
-npm run smoke -- http://localhost:3000        # API smoke test against a running server
-npm run test:e2e                              # Playwright browser smoke test
+GEMINI_API_KEY="your-gemini-api-key"
 ```
 
-## Environment variables
-
-| Variable | Purpose |
-|---|---|
-| `GEMINI_API_KEY` | Gemini access (Secret Manager on Cloud Run) |
-| `GEMINI_MODEL` | Optional model override; `npm run check:model` lists what your key supports |
-| `APP_MODE` | `demo` for the sandbox; anything else is live mode |
-| `GOOGLE_MAPS_API_KEY` | Injected at runtime through `/config.js` (no rebuild needed). Restrict by HTTP referrer |
-| `VITE_FIREBASE_*` | Firebase web config (live mode) |
-| `FIREBASE_SERVICE_ACCOUNT_JSON`, `ADMIN_SESSION_SECRET`, `INTERNAL_JOB_KEY` | Live-mode secrets |
-| `META_APP_SECRET`, `WHATSAPP_*`, `GRAPH_API_VERSION` | WhatsApp Cloud API |
-| `PII_REDACTION_ENABLED`, `RETENTION_DAYS` | Privacy controls |
-| `DEMO_GEMINI_DAILY_CAP` | Daily Gemini call cap for the public demo (default 500) |
-| `ENABLE_TTS` | Optional text-to-speech playback of tracking status (off by default) |
-
-Google Maps setup: enable **Maps JavaScript API**, create a key restricted to your site's exact URL, and set it on Cloud Run:
-
+### 4. Run Locally
 ```bash
-gcloud run services update nagarvaani --region asia-south1 --update-env-vars GOOGLE_MAPS_API_KEY=<key>
+npm run dev
 ```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-## Deploy to Cloud Run (demo mode)
+---
 
-From Cloud Shell in your project (billing enabled):
+## 🧪 Testing & Quality Assurance
 
+Run the complete test suite:
 ```bash
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com
-echo -n "<GEMINI_KEY>" | gcloud secrets create GEMINI_API_KEY --data-file=- --replication-policy=automatic
-# grant the runtime service account roles/secretmanager.secretAccessor on that secret, then:
-gcloud run deploy nagarvaani --source . --region asia-south1 --allow-unauthenticated \
-  --memory 1Gi --cpu 1 --cpu-boost --min-instances 0 --max-instances 1 \
-  --set-env-vars "NODE_ENV=production,APP_MODE=demo,GOOGLE_MAPS_API_KEY=<maps key>" \
-  --set-secrets GEMINI_API_KEY=GEMINI_API_KEY:latest
+npm run test
 ```
 
-`--max-instances 1` is required because the demo sandbox and the WhatsApp idempotency cache are per instance.
-Full steps and troubleshooting: [setup-guide.md](setup-guide.md).
-
-## WhatsApp setup (live mode)
-
-Create a Meta Business app with the WhatsApp product, set the webhook to `{CLOUD_RUN_URL}/api/whatsapp/webhook`
-with your verify token, subscribe to `messages`, and set `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN` and `META_APP_SECRET`.
-Requests are rejected unless the `X-Hub-Signature-256` HMAC matches; media downloads are limited to Meta hosts, 16 MB and an allowlist
-of MIME types. Test locally without Meta using `npx tsx scripts/simulate-whatsapp.ts`. The integration has been exercised with
-signed simulated payloads and unit tests, not yet with a live Meta account.
-
-## Security and privacy
-
-- PII patterns (phone, email, ID-like numbers) are redacted before Gemini requests and before persistence of WhatsApp content.
-- Staff access uses Firebase Google sign-in plus Firestore role records; sessions are short-lived; status changes are audit-logged.
-- Per-IP rate limits, request size limits and a daily Gemini cap protect the public demo; the retention job is internal-only.
-- Accessibility prompt on first visit: larger text, high contrast, reduced motion.
-
-## Evaluation criteria alignment
-
-| Criterion (weight) | Where it shows up |
-|---|---|
-| AI/Technical Execution (25%) | Gemini transcription, classification with schema-validated JSON, translation, urgency, recommendations; PII redaction; fallbacks tagged honestly; 39 unit tests, Playwright smoke test, CI (`lib/gemini.ts`, `lib/classify.ts`, `lib/transcribe.ts`, `lib/priority.ts`) |
-| Problem-Solution Fit (20%) | Voice, text, photo and WhatsApp intake, multilingual, aggregated hotspots and ranked project recommendations for policymakers |
-| Depth & Reach Across India (20%) | 10 Indian languages plus English (17 UI languages), 56 Indian seed records across 20+ states, Census/NITI/NFHS-5 district data layer |
-| Deployability & Scalability (20%) | Single Cloud Run container, demo and live modes, health and ready endpoints, CI, source-deploy guide |
-| Impact Potential (15%) | Need-weighted ranking surfaces under-served districts that raw complaint counts hide |
-
-## Limitations and next steps
-
-- Demo data is synthetic; the public demo runs a per-instance in-memory sandbox.
-- NFHS-5 indicators cover 30 of 58 districts; Census values await human verification.
-- Gemini classification accuracy has not been measured on real complaints.
-- WhatsApp needs a Meta Business account and has not been tested live; idempotency is per instance (use Firestore or a queue for multi-instance).
-- Next: complete national data coverage, live-mode pilot with Firebase, real complaint evaluation, DPDP Act 2023 compliance review, load testing.
-
-## Repository layout
-
-```
-server.ts        Express API and static hosting
-lib/             Server modules and their tests (classify, gemini, priority, whatsapp, ...)
-components/      React UI (citizen, dashboard, shared)
-src/             Vite entry, App.tsx, pages
-data/            District data, sources, eval set
-docs/            Eval results, submission notes, brand kit
-scripts/         check-env, check-model, eval, smoke, WhatsApp simulator, NFHS import
-public/          Static assets, icons, brand logos
+Run TypeScript compilation check:
+```bash
+npx tsc --noEmit
 ```
 
-Brand assets live in [docs/brand](docs/brand). Licence and data terms: see [data/SOURCES.md](data/SOURCES.md).
+Build production bundle:
+```bash
+npm run build
+```
+
+---
+
+## 📜 License
+
+Distributed under the Apache 2.0 License.

@@ -59,7 +59,8 @@ export default function Header({
     reports: t("allSubmissions", "All Reports"),
     settings: t("settings", "System Settings"),
     priority: t("priorityInterventions", "AI Priorities"),
-    departments: t("departments", "Department SLAs & Routing"),
+    ngo: t("ngoOnboarding", "NGO Onboarding & Partner Network"),
+    departments: t("ngoOnboarding", "NGO Onboarding & Partner Network"),
     citizen: t("citizenPortal", "Submit Grievance"),
   };
 

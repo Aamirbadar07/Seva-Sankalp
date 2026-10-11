@@ -14,10 +14,10 @@ import {
   Sparkles,
   Sprout,
   RotateCw,
-  Building2,
+  HeartHandshake,
 } from "lucide-react";
 
-export type NavTab = "overview" | "heatmap" | "brics" | "reports" | "settings" | "citizen" | "priority" | "track" | "departments";
+export type NavTab = "overview" | "heatmap" | "brics" | "reports" | "settings" | "citizen" | "priority" | "track" | "ngo" | "departments";
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -41,7 +41,7 @@ export default function Sidebar({
     { id: "overview", label: t("overview", "Overview"), icon: LayoutDashboard },
     { id: "heatmap", label: t("demandHeatmap", "Heatmap"), icon: Map },
     { id: "priority", label: t("priorityInterventions", "AI Priorities"), icon: Sparkles },
-    { id: "departments", label: t("departments", "Departments"), icon: Building2 },
+    { id: "ngo", label: t("ngoOnboarding", "NGO Onboarding"), icon: HeartHandshake },
     { id: "brics", label: t("bricsComparison", "Beyond India (BRICS)"), icon: Globe2 },
     { id: "reports", label: t("allSubmissions", "All Reports"), icon: FileText },
     { id: "settings", label: t("settings", "Settings"), icon: Settings },
